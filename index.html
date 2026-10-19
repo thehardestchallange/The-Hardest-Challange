@@ -6,46 +6,63 @@
 <title>The Hardest Challenge</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0a0a0f">
-
-<!-- iOS tam ekran -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="THC">
 <link rel="apple-touch-icon" href="icon.png">
-
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; background: #0a0a0f; font-family: system-ui, sans-serif; color: #fff; }
   #game { display: block; width: 100vw; height: 100vh; }
+  
+  /* Yeni Menü Düzeni */
   #menu {
     position: absolute; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 16px;
+    align-items: center; justify-content: space-between; padding: 40px 20px;
     background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0f 100%);
     z-index: 10;
   }
-  #menu h1 { font-size: clamp(24px, 6vw, 48px); letter-spacing: 2px; text-align: center;
-    background: linear-gradient(90deg, #ffd700, #ff006e); -webkit-background-clip: text; color: transparent; }
-  #skins { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-  #skins button { padding: 10px 16px; border: 2px solid #333; border-radius: 8px;
-    color: #000; font-weight: bold; cursor: pointer; font-size: 14px; }
-  #skins button.active { border-color: #fff; transform: scale(1.05); }
-  #start { padding: 16px 48px; font-size: 22px; font-weight: bold; border: none;
-    border-radius: 12px; background: linear-gradient(90deg, #ffd700, #ff8c00);
-    color: #000; cursor: pointer; letter-spacing: 2px; }
-  #menu a { color: #888; font-size: 14px; text-decoration: none; }
-  #menu a:hover { color: #fff; }
+  #menu h1 { 
+    font-size: clamp(28px, 8vw, 56px); letter-spacing: 2px; text-align: center;
+    background: linear-gradient(90deg, #ffd700, #ff006e); -webkit-background-clip: text; color: transparent;
+    margin-top: 10vh;
+  }
+  .menu-center { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .menu-center p { font-size: 18px; color: #ccc; }
+  #skins { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  #skins button { 
+    padding: 12px 20px; border: 2px solid #333; border-radius: 10px;
+    color: #000; font-weight: bold; cursor: pointer; font-size: 16px;
+    transition: transform 0.2s;
+  }
+  #skins button.active { border-color: #fff; transform: scale(1.1); }
+  #start { 
+    padding: 18px 60px; font-size: 24px; font-weight: bold; border: none;
+    border-radius: 14px; background: linear-gradient(90deg, #ffd700, #ff8c00);
+    color: #000; cursor: pointer; letter-spacing: 2px;
+    margin-top: 10px;
+  }
+  #repo { 
+    padding: 12px 30px; font-size: 16px; font-weight: bold; text-decoration: none;
+    border: 2px solid #555; border-radius: 10px; color: #fff;
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 5vh;
+  }
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
 <div id="menu">
   <h1>THE HARDEST CHALLENGE</h1>
-  <p>Kostüm Seç</p>
-  <div id="skins"></div>
-  <button id="start">OYNA</button>
-  <a id="apk" href="TheHardestChallenge.apk" download>📱 APK İndir</a>
-  <a id="gh" href="https://github.com/KULLANICI_ADIN/the-hardest-challenge" target="_blank">💻 Açık Kaynak (GitHub)</a>
+  
+  <div class="menu-center">
+    <p>Kostüm Seç</p>
+    <div id="skins"></div>
+    <button id="start">OYNA</button>
+  </div>
+
+  <a id="repo" href="https://github.com/thehardestchallange/The-Hardest-Challange/blob/main/README.md" target="_blank">📂 Repo</a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/kaboom@3000.1.17/dist/kaboom.js"></script>
