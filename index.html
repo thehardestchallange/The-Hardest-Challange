@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>The Hardest Challenge</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0a0f">
+
+<!-- iOS tam ekran -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="THC">
+<link rel="apple-touch-icon" href="icon.png">
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; background: #0a0a0f; font-family: system-ui, sans-serif; color: #fff; }
+  #game { display: block; width: 100vw; height: 100vh; }
+  #menu {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0f 100%);
+    z-index: 10;
+  }
+  #menu h1 { font-size: clamp(24px, 6vw, 48px); letter-spacing: 2px; text-align: center;
+    background: linear-gradient(90deg, #ffd700, #ff006e); -webkit-background-clip: text; color: transparent; }
+  #skins { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  #skins button { padding: 10px 16px; border: 2px solid #333; border-radius: 8px;
+    color: #000; font-weight: bold; cursor: pointer; font-size: 14px; }
+  #skins button.active { border-color: #fff; transform: scale(1.05); }
+  #start { padding: 16px 48px; font-size: 22px; font-weight: bold; border: none;
+    border-radius: 12px; background: linear-gradient(90deg, #ffd700, #ff8c00);
+    color: #000; cursor: pointer; letter-spacing: 2px; }
+  #menu a { color: #888; font-size: 14px; text-decoration: none; }
+  #menu a:hover { color: #fff; }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="menu">
+  <h1>THE HARDEST CHALLENGE</h1>
+  <p>Kostüm Seç</p>
+  <div id="skins"></div>
+  <button id="start">OYNA</button>
+  <a id="apk" href="TheHardestChallenge.apk" download>📱 APK İndir</a>
+  <a id="gh" href="https://github.com/KULLANICI_ADIN/the-hardest-challenge" target="_blank">💻 Açık Kaynak (GitHub)</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/kaboom@3000.1.17/dist/kaboom.js"></script>
+<script src="game.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+</body>
+</html>
