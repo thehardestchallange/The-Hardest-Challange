@@ -99,7 +99,7 @@ scene('game', () => {
   }
   onKeyPress('space', jump);
   onMousePress(jump);
-  onTouchBegin(jump);
+  onTouchStart(jump); // ✅ Düzeltildi: onTouchBegin yerine onTouchStart
 
   let score = 0;
   const scoreLabel = add([text('0', { size: 24 }), pos(20, 20), color(255)]);
@@ -142,7 +142,7 @@ scene('gameover', (s) => {
   add([text('Tekrar için dokun', { size: 20 }), pos(center().x, center().y + 80), anchor('center'), color(180)]);
   onClick(() => go('game'));
   onKeyPress('space', () => go('game'));
-  onTouchBegin(() => go('game'));
+  onTouchStart(() => go('game')); // ✅ Düzeltildi: onTouchBegin yerine onTouchStart
 });
 
 document.getElementById('start').onclick = () => {
