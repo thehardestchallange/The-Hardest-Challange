@@ -6,6 +6,7 @@ const SKINS = {
 };
 
 let currentSkin = localStorage.getItem('thc_skin') || 'classic';
+let menuOpen = true;
 
 // Kostüm butonları
 const skinsEl = document.getElementById('skins');
@@ -19,6 +20,7 @@ Object.entries(SKINS).forEach(([key, s]) => {
     localStorage.setItem('thc_skin', key);
     document.querySelectorAll('#skins button').forEach(x => x.classList.remove('active'));
     b.classList.add('active');
+    if (menuOpen) go('demo');
   };
   skinsEl.appendChild(b);
 });
@@ -33,38 +35,71 @@ kaboom({
   global: true
 });
 
-// Görselleri yükle
 loadSprite('playerImg', 'https://i.ibb.co/fzX3W444/MG-5369.png');
-loadSprite('spikeImg', 'https://i.ibb.co/W44DN3mg/MG-5979.png');
-loadSprite('bgImg', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQ39THOeHz9McHv4CAOneT9IubrH38ExTVK0nCJofOPg&s=10');
+loadSprite('spikeImg',  'https://i.ibb.co/W44DN3mg/MG-5979.png');
+loadSprite('bgImg',     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQ39THOeHz9McHv4CAOneT9IubrH38ExTVK0nCJofOPg&s=10');
 
-scene('game', () => {
-  const skin = SKINS[currentSkin];
+function addBackground() {
+  add([sprite('bgImg', { width: width(), height: height() }), pos(0, 0), fixed(), z(-1)]);
+  add([rect(width(), 20), pos(0, height() - 20), color(60, 60, 80), area(), 'ground']);
+}
 
-  // Arka plan resmi (tam ekran)
-  add([
-    sprite('bgImg', { width: width(), height: height() }),
-    pos(0, 0),
-    fixed(),
-    z(-1)
-  ]);
-
-  // Zemin
-  add([rect(width(), 20), pos(0, height()-20), color(60,60,80), area(), 'ground']);
-
-  // Karakter (dönme yok, sadece zıplama)
-  const player = add([
+function createPlayer(skin) {
+  return add([
     sprite('playerImg', { width: skin.size, height: skin.size }),
-    pos(120, height()-20-skin.size),
+    pos(120, height() - 20 - skin.size),
     area(),
     body({ jumpForce: skin.jump }),
     'player'
   ]);
+}
 
-  function jump() { if (player.isGrounded()) player.jump(); }
+// 🎬 DEMO sahnesi — menü arkasında rastgele zıplayan karakter + akan dikenler
+scene('demo', () => {
+  const skin = SKINS[currentSkin];
+  addBackground();
+  const player = createPlayer(skin);
+
+  let jumpTimer = 0.4;
+  let spawnTimer = 0;
+
+  onUpdate(() => {
+    jumpTimer -= dt();
+    if (jumpTimer <= 0 && player.isGrounded()) {
+      player.jump();
+      jumpTimer = rand(0.4, 1.3);
+    }
+
+    spawnTimer += dt();
+    if (spawnTimer > 1.2) {
+      spawnTimer = 0;
+      const h = rand(30, 70);
+      const ob = add([
+        sprite('spikeImg', { width: 30, height: h }),
+        pos(width(), height() - 20 - h),
+        area(),
+        'obstacle'
+      ]);
+      ob.onUpdate(() => {
+        ob.pos.x -= skin.speed * dt();
+        if (ob.pos.x < -50) destroy(ob);
+      });
+    }
+  });
+});
+
+// 🎮 OYUN sahnesi
+scene('game', () => {
+  const skin = SKINS[currentSkin];
+  addBackground();
+  const player = createPlayer(skin);
+
+  function jump() {
+    if (player.isGrounded()) player.jump();
+  }
   onKeyPress('space', jump);
   onMousePress(jump);
-  onTouchStart(jump);
+  onTouchBegin(jump);
 
   let score = 0;
   const scoreLabel = add([text('0', { size: 24 }), pos(20, 20), color(255)]);
@@ -82,10 +117,9 @@ scene('game', () => {
       spawnGap = Math.max(0.7, 1.4 - score / 300);
 
       const h = rand(30, 70);
-      // Diken (görsel ile)
       const ob = add([
         sprite('spikeImg', { width: 30, height: h }),
-        pos(width(), height()-20-h),
+        pos(width(), height() - 20 - h),
         area(),
         'obstacle'
       ]);
@@ -108,10 +142,14 @@ scene('gameover', (s) => {
   add([text('Tekrar için dokun', { size: 20 }), pos(center().x, center().y + 80), anchor('center'), color(180)]);
   onClick(() => go('game'));
   onKeyPress('space', () => go('game'));
-  onTouchStart(() => go('game'));
+  onTouchBegin(() => go('game'));
 });
 
 document.getElementById('start').onclick = () => {
+  menuOpen = false;
   document.getElementById('menu').style.display = 'none';
   go('game');
 };
+
+// Başlangıçta demo çalışsın
+go('demo');
