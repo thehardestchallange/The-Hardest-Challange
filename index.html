@@ -27,23 +27,17 @@
       #menu {
         position: absolute; inset: 0; display: flex; flex-direction: column;
         align-items: center; justify-content: space-between; padding: 30px 20px;
-        background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0f 100%);
+        background: rgba(10, 10, 15, 0.55);
         z-index: 10;
       }
-      #menu::before {
-        content: '';
-        position: absolute; inset: 0;
-        background: url('https://i.ibb.co/fzX3W444/MG-5369.png') center/contain no-repeat;
-        opacity: 0.25;
-        z-index: -1;
-        pointer-events: none;
-      }
+
       #start {
         padding: 18px 70px; font-size: 26px; font-weight: bold; border: none;
         border-radius: 14px; background: linear-gradient(90deg, #ffd700, #ff8c00);
         color: #000; cursor: pointer; letter-spacing: 2px;
         box-shadow: 0 0 20px rgba(255, 200, 0, 0.4);
       }
+
       .menu-center { display: flex; flex-direction: column; align-items: center; gap: 16px; }
       .menu-center p { font-size: 18px; color: #ccc; }
       #skins { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
@@ -53,6 +47,7 @@
         transition: transform 0.2s;
       }
       #skins button.active { border-color: #fff; transform: scale(1.1); }
+
       #repo {
         padding: 12px 30px; font-size: 16px; font-weight: bold; text-decoration: none;
         border: 2px solid #555; border-radius: 10px; color: #fff;
