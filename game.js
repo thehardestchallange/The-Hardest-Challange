@@ -41,7 +41,8 @@ loadSprite('bgImg',     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT
 
 function addBackground() {
   add([sprite('bgImg', { width: width(), height: height() }), pos(0, 0), fixed(), z(-1)]);
-  add([rect(width(), 20), pos(0, height() - 20), color(60, 60, 80), area(), 'ground']);
+  // Zemine isStatic eklendi ki çarpışma sorunsuz olsun
+  add([rect(width(), 20), pos(0, height() - 20), color(60, 60, 80), area(), body({ isStatic: true }), 'ground']);
 }
 
 function createPlayer(skin) {
@@ -54,7 +55,7 @@ function createPlayer(skin) {
   ]);
 }
 
-// 🎬 DEMO sahnesi — menü arkasında rastgele zıplayan karakter + akan dikenler
+// 🎬 DEMO sahnesi
 scene('demo', () => {
   const skin = SKINS[currentSkin];
   addBackground();
@@ -65,7 +66,11 @@ scene('demo', () => {
 
   onUpdate(() => {
     jumpTimer -= dt();
-    if (jumpTimer <= 0 && player.isGrounded()) {
+    
+    // isGrounded yerine koordinat kontrolü (daha güvenilir)
+    const isOnGround = player.pos.y >= height() - 20 - skin.size - 2;
+
+    if (jumpTimer <= 0 && isOnGround) {
       player.jump();
       jumpTimer = rand(0.4, 1.3);
     }
@@ -95,11 +100,14 @@ scene('game', () => {
   const player = createPlayer(skin);
 
   function jump() {
-    if (player.isGrounded()) player.jump();
+    // Koordinat kontrolü: Eğer yere yakınsa zıpla
+    if (player.pos.y >= height() - 20 - skin.size - 2) {
+      player.jump();
+    }
   }
+  
   onKeyPress('space', jump);
-  onMousePress(jump);
-  onTouchStart(jump); // ✅ Düzeltildi: onTouchBegin yerine onTouchStart
+  onMousePress(jump); // touchToMouse sayesinde mobilde de çalışır
 
   let score = 0;
   const scoreLabel = add([text('0', { size: 24 }), pos(20, 20), color(255)]);
@@ -140,9 +148,10 @@ scene('gameover', (s) => {
   add([text('GAME OVER', { size: 56 }), pos(center().x, center().y - 40), anchor('center'), color(255, 60, 80)]);
   add([text('Skor: ' + s, { size: 32 }), pos(center().x, center().y + 20), anchor('center'), color(255)]);
   add([text('Tekrar için dokun', { size: 20 }), pos(center().x, center().y + 80), anchor('center'), color(180)]);
-  onClick(() => go('game'));
+  
+  // Sadece onMousePress kullanıyoruz (dokunmatik için de geçerli)
+  onMousePress(() => go('game'));
   onKeyPress('space', () => go('game'));
-  onTouchStart(() => go('game')); // ✅ Düzeltildi: onTouchBegin yerine onTouchStart
 });
 
 document.getElementById('start').onclick = () => {
