@@ -1,13 +1,13 @@
 const SKINS = {
   classic: { name: 'Klasik', color: [255,200,0],  speed: 320, jump: 900,  size: 40 },
-  neon:    { name: 'Neon',   color: [0,255,200],  speedSkin: 420, jump: 850,  size: 34 },
+  neon:    { name: 'Neon',   color: [0,255,200],  speed: 420, jump: 850,  size: 34 },
   purple:  { name: 'Mor',    color: [180,80,255], speed: 280, jump: 1000, size: 44 },
-  blood:   { name: 'Kan',    color: [255,60 =,80],  speed: 350, jump: 950,  size: 48 }
+  blood:   { name: 'Kan',    color: [255,60,80],  speed: 350, jump: 950,  size: 48 }
 };
 
-let current localStorage.getItem('thc_skin') || 'classic';
+let currentSkin = localStorage.getItem('thc_skin') || 'classic';
 
-// Kostüm butonlarını bas
+// Kostüm butonları
 const skinsEl = document.getElementById('skins');
 Object.entries(SKINS).forEach(([key, s]) => {
   const b = document.createElement('button');
@@ -23,15 +23,12 @@ Object.entries(SKINS).forEach(([key, s]) => {
   skinsEl.appendChild(b);
 });
 
-// Kaboom başlatma (mobil uyumluluk için letterbox ve scale)
 kaboom({
   canvas: document.getElementById('game'),
   width: 800,
   height: 450,
   background: [10, 10, 15],
   letterbox: true,
-  scale: 1, 
-  crisp: true,
   touchToMouse: true,
   global: true
 });
@@ -44,25 +41,23 @@ loadSprite('bgImg', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQ39T
 scene('game', () => {
   const skin = SKINS[currentSkin];
 
-  // Arka plan resmi
+  // Arka plan resmi (tam ekran)
   add([
-    sprite('bgImg'),
+    sprite('bgImg', { width: width(), height: height() }),
     pos(0, 0),
-    scale(1.5), // Ekranı kaplaması için ölçekle
     fixed(),
     z(-1)
   ]);
 
+  // Zemin
   add([rect(width(), 20), pos(0, height()-20), color(60,60,80), area(), 'ground']);
 
-  // Karakter (görsel ile)
+  // Karakter (dönme yok, sadece zıplama)
   const player = add([
-    sprite('playerImg'),
+    sprite('playerImg', { width: skin.size, height: skin.size }),
     pos(120, height()-20-skin.size),
     area(),
     body({ jumpForce: skin.jump }),
-    rotate(0),
-    scale(skin.size / 40), // Boyutu kostüme göre ayarla
     'player'
   ]);
 
@@ -78,8 +73,6 @@ scene('game', () => {
   let spawnGap = 1.4;
 
   onUpdate(() => {
-    if (!player.isGrounded()) player.angle += 400 * dt();
-
     score += dt() * 10;
     scoreLabel.text = Math.floor(score);
 
@@ -91,10 +84,9 @@ scene('game', () => {
       const h = rand(30, 70);
       // Diken (görsel ile)
       const ob = add([
-        sprite('spikeImg'),
+        sprite('spikeImg', { width: 30, height: h }),
         pos(width(), height()-20-h),
         area(),
-        scale(0.5),
         'obstacle'
       ]);
       ob.onUpdate(() => {
