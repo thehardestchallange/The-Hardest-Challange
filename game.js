@@ -1,42 +1,22 @@
-const SKINS = {
-  classic: { name: 'Klasik', color: [255,200,0],  speed: 320, jump: 900,  size: 40 },
-  neon:    { name: 'Neon',   color: [0,255,200],  speed: 420, jump: 850,  size: 34 },
-  purple:  { name: 'Mor',    color: [180,80,255], speed: 280, jump: 1000, size: 44 },
-  blood:   { name: 'Kan',    color: [255,60,80],  speed: 350, jump: 950,  size: 48 }
-};
+// --- AYARLAR ---
+const PLAYER_SIZE = 80; // Karelerin boyutu büyütüldü
+const GRAVITY = 2500;
+const JUMP_FORCE = 1100;
+const GROUND_HEIGHT = 40;
+const LEVEL_COUNT = 10;
 
-let currentSkin = localStorage.getItem('thc_skin') || 'classic';
-let menuOpen = true;
-let doJump = () => {}; // Global zıplama fonksiyonu
+let doJump = () => {}; 
+let currentLevel = 1;
+let isEditing = false;
+let editorSpikes = []; // Editördeki dikenlerin konumları {x, y}
 
-// 🚀 TIKLAMA VE DOKUNMAYI GARANTİYE ALAN GLOBAL DİNLEYİCİLER (Canvas'a odaklanma sorununu çözer)
-window.addEventListener('mousedown', (e) => {
-  if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') doJump();
-});
-window.addEventListener('touchstart', (e) => {
-  if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') doJump();
-}, { passive: true });
-window.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' || e.code === 'ArrowUp') doJump();
-});
+// --- HTML ELEMANLARI ---
+const menuUI = document.getElementById('menu');
+const levelSelectUI = document.getElementById('level-select');
+const editorScreenUI = document.getElementById('editor-screen');
+const levelContainer = document.getElementById('level-container');
 
-// Kostüm butonları
-const skinsEl = document.getElementById('skins');
-Object.entries(SKINS).forEach(([key, s]) => {
-  const b = document.createElement('button');
-  b.textContent = s.name;
-  b.style.background = `rgb(${s.color.join(',')})`;
-  if (key === currentSkin) b.classList.add('active');
-  b.onclick = () => {
-    currentSkin = key;
-    localStorage.setItem('thc_skin', key);
-    document.querySelectorAll('#skins button').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    if (menuOpen) go('demo');
-  };
-  skinsEl.appendChild(b);
-});
-
+// --- KABOOM BAŞLATMA ---
 kaboom({
   canvas: document.getElementById('game'),
   width: 800,
@@ -50,166 +30,205 @@ loadSprite('playerImg', 'https://i.ibb.co/fzX3W444/MG-5369.png');
 loadSprite('spikeImg',  'https://i.ibb.co/W44DN3mg/MG-5979.png');
 loadSprite('bgImg',     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQ39THOeHz9McHv4CAOneT9IubrH38ExTVK0nCJofOPg&s=10');
 
-function addBackground() {
-  add([sprite('bgImg', { width: width(), height: height() }), pos(0, 0), fixed(), z(-1)]);
-  // Zemin alanı
-  add([rect(width(), 20), pos(0, height() - 20), color(60, 60, 80), area(), 'ground']);
+// --- GLOBAL TIKLAMA DİNLEYİCİLERİ (Zıplama için) ---
+window.addEventListener('mousedown', (e) => {
+  if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && !isEditing && levelSelectUI.style.display === 'none') doJump();
+});
+window.addEventListener('touchstart', (e) => {
+  if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && !isEditing && levelSelectUI.style.display === 'none') doJump();
+}, { passive: true });
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') doJump();
+});
+
+// --- UI GEÇİŞLERİ ---
+function showMenu() {
+  menuUI.style.display = 'flex';
+  levelSelectUI.style.display = 'none';
+  editorScreenUI.style.display = 'none';
+  isEditing = false;
+  go('demo');
 }
 
-// 🎬 DEMO sahnesi (Menü arkası)
-scene('demo', () => {
-  const skin = SKINS[currentSkin];
-  addBackground();
+function showLevelSelect() {
+  menuUI.style.display = 'none';
+  levelSelectUI.style.display = 'flex';
+  editorScreenUI.style.display = 'none';
   
-  // Manuel Fizik Değişkenleri (Kaboom body() kullanmıyoruz, hataları önlüyoruz)
-  let playerY = height() - 20 - skin.size;
+  levelContainer.innerHTML = '';
+  for (let i = 1; i <= LEVEL_COUNT; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'level-btn';
+    btn.textContent = i;
+    btn.onclick = () => {
+      currentLevel = i;
+      levelSelectUI.style.display = 'none';
+      go('game', i);
+    };
+    levelContainer.appendChild(btn);
+  }
+}
+
+// Buton atamaları
+if (document.getElementById('btn-play')) document.getElementById('btn-play').onclick = showLevelSelect;
+if (document.getElementById('btn-back-menu')) document.getElementById('btn-back-menu').onclick = showMenu;
+
+if (document.getElementById('btn-open-editor')) {
+  document.getElementById('btn-open-editor').onclick = () => {
+    menuUI.style.display = 'none';
+    editorScreenUI.style.display = 'flex';
+    editorSpikes = [];
+    isEditing = true;
+    go('editor');
+  };
+}
+
+if (document.getElementById('btn-exit-editor')) {
+  document.getElementById('btn-exit-editor').onclick = () => {
+    isEditing = false;
+    showMenu();
+  };
+}
+
+// Editör Kaydetme ve Temizleme
+if (document.getElementById('btn-save')) {
+  document.getElementById('btn-save').onclick = () => {
+    const levelData = { level: currentLevel, spikes: editorSpikes };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(levelData, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "harita.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
+}
+
+if (document.getElementById('btn-clear')) {
+  document.getElementById('btn-clear').onclick = () => {
+    editorSpikes = [];
+    go('editor'); 
+  };
+}
+
+// --- ARKA PLAN ÇİZİMİ ---
+function addBackground() {
+  add([sprite('bgImg', { width: width(), height: height() }), pos(0, 0), fixed(), z(-1)]);
+  add([rect(width(), GROUND_HEIGHT), pos(0, height() - GROUND_HEIGHT), color(60, 60, 80), area(), 'ground']);
+}
+
+// --- DEMO (MENÜ ARKASI) ---
+scene('demo', () => {
+  addBackground();
+  let playerY = height() - GROUND_HEIGHT - PLAYER_SIZE;
   const player = add([
-    sprite('playerImg', { width: skin.size, height: skin.size }),
-    pos(120, playerY),
-    area(),
-    'player'
+    sprite('playerImg', { width: PLAYER_SIZE, height: PLAYER_SIZE }),
+    pos(120, playerY), area(), 'player'
   ]);
 
-  let velY = 0;
-  const gravity = 2000;
-  let grounded = true;
-  let jumpTimer = 0.4;
-  let spawnTimer = 0;
+  let velY = 0; let jumpTimer = 0.4; let spawnTimer = 0;
 
   onUpdate(() => {
-    // 1. Yerçekimi ve Fizik
-    velY += gravity * dt();
-    playerY += velY * dt();
-    
-    const groundY = height() - 20 - skin.size;
-    if (playerY >= groundY) {
-      playerY = groundY;
-      velY = 0;
-      grounded = true;
-    } else {
-      grounded = false;
-    }
+    velY += GRAVITY * dt(); playerY += velY * dt();
+    const groundY = height() - GROUND_HEIGHT - PLAYER_SIZE;
+    if (playerY >= groundY) { playerY = groundY; velY = 0; }
     player.pos.y = playerY;
 
-    // 2. Rastgele Zıplama (Demo için)
     jumpTimer -= dt();
-    if (jumpTimer <= 0 && grounded) {
-      velY = -skin.jump;
-      grounded = false;
-      jumpTimer = rand(0.4, 1.3);
+    if (jumpTimer <= 0 && playerY >= groundY) {
+      velY = -JUMP_FORCE; jumpTimer = rand(0.4, 1.3);
     }
 
-    // 3. Engel Çıkarma
     spawnTimer += dt();
     if (spawnTimer > 1.2) {
       spawnTimer = 0;
-      const h = rand(30, 70);
-      const ob = add([
-        sprite('spikeImg', { width: 30, height: h }),
-        pos(width(), height() - 20 - h),
-        area(),
-        'obstacle'
-      ]);
-      ob.onUpdate(() => {
-        ob.pos.x -= skin.speed * dt();
-        if (ob.pos.x < -50) destroy(ob);
-      });
+      const h = rand(40, 80);
+      const ob = add([sprite('spikeImg', { width: 40, height: h }), pos(width(), height() - GROUND_HEIGHT - h), area(), 'obstacle']);
+      ob.onUpdate(() => { ob.pos.x -= 350 * dt(); if (ob.pos.x < -50) destroy(ob); });
     }
   });
 });
 
-// 🎮 OYUN sahnesi
-scene('game', () => {
-  const skin = SKINS[currentSkin];
+// --- ASIL OYUN (SEÇİLEN BÖLÜM) ---
+scene('game', (levelNum) => {
   addBackground();
-  
-  let playerY = height() - 20 - skin.size;
+  let playerY = height() - GROUND_HEIGHT - PLAYER_SIZE;
   const player = add([
-    sprite('playerImg', { width: skin.size, height: skin.size }),
-    pos(120, playerY),
-    area(),
-    'player'
+    sprite('playerImg', { width: PLAYER_SIZE, height: PLAYER_SIZE }),
+    pos(120, playerY), area(), 'player'
   ]);
 
-  let velY = 0;
-  const gravity = 2000;
-  let grounded = true;
+  let velY = 0; let grounded = true;
 
-  // Ekrana tıklanınca çalışacak zıplama fonksiyonu
-  doJump = () => {
-    if (grounded) {
-      velY = -skin.jump;
-      grounded = false;
-    }
-  };
+  // Zıplama mantığı
+  doJump = () => { if (grounded) { velY = -JUMP_FORCE; grounded = false; } };
 
   let score = 0;
-  const scoreLabel = add([text('0', { size: 24 }), pos(20, 20), color(255)]);
+  const scoreLabel = add([text('Bölüm ' + levelNum + ' | Skor: 0', { size: 24 }), pos(20, 20), color(255)]);
 
   let sinceSpawn = 0;
-  let spawnGap = 1.4;
+  // Bölüm numarasına göre zorluk artışı
+  let spawnGap = Math.max(0.6, 1.4 - (levelNum * 0.08));
+  let speed = 350 + (levelNum * 20);
 
   onUpdate(() => {
-    // 1. Yerçekimi ve Fizik
-    velY += gravity * dt();
-    playerY += velY * dt();
-    
-    const groundY = height() - 20 - skin.size;
-    if (playerY >= groundY) {
-      playerY = groundY;
-      velY = 0;
-      grounded = true;
-    } else {
-      grounded = false;
-    }
+    velY += GRAVITY * dt(); playerY += velY * dt();
+    const groundY = height() - GROUND_HEIGHT - PLAYER_SIZE;
+    if (playerY >= groundY) { playerY = groundY; velY = 0; grounded = true; }
+    else { grounded = false; }
     player.pos.y = playerY;
 
-    // 2. Skor
     score += dt() * 10;
-    scoreLabel.text = Math.floor(score);
+    scoreLabel.text = 'Bölüm ' + levelNum + ' | Skor: ' + Math.floor(score);
 
-    // 3. Engel Çıkarma
     sinceSpawn += dt();
     if (sinceSpawn > spawnGap) {
       sinceSpawn = 0;
-      spawnGap = Math.max(0.7, 1.4 - score / 300);
-
-      const h = rand(30, 70);
-      const ob = add([
-        sprite('spikeImg', { width: 30, height: h }),
-        pos(width(), height() - 20 - h),
-        area(),
-        'obstacle'
-      ]);
-      ob.onUpdate(() => {
-        ob.pos.x -= skin.speed * dt();
-        if (ob.pos.x < -50) destroy(ob);
-      });
+      const h = rand(40, 80);
+      const ob = add([sprite('spikeImg', { width: 40, height: h }), pos(width(), height() - GROUND_HEIGHT - h), area(), 'obstacle']);
+      ob.onUpdate(() => { ob.pos.x -= speed * dt(); if (ob.pos.x < -50) destroy(ob); });
     }
   });
 
-  player.onCollide('obstacle', () => {
-    shake(12);
-    go('gameover', Math.floor(score));
+  player.onCollide('obstacle', () => { shake(12); go('gameover', Math.floor(score)); });
+});
+
+// --- HARİTA EDİTÖRÜ SAHNESİ ---
+scene('editor', () => {
+  addBackground();
+  
+  onClick(() => {
+    const mouse = mousePos();
+    const gridSize = 40;
+    const snappedX = Math.floor(mouse.x / gridSize) * gridSize;
+    const snappedY = Math.floor(mouse.y / gridSize) * gridSize;
+    
+    // Zemine çok yakınsa yerleştirme
+    if (snappedY > height() - GROUND_HEIGHT - gridSize) return;
+
+    // Zaten var mı kontrol et
+    const exists = editorSpikes.find(s => s.x === snappedX && s.y === snappedY);
+    if (!exists) {
+      editorSpikes.push({ x: snappedX, y: snappedY });
+      add([sprite('spikeImg', { width: gridSize, height: gridSize }), pos(snappedX, snappedY), 'editor-obstacle']);
+    }
+  });
+
+  // Mevcut dikenleri ekrana çiz
+  editorSpikes.forEach(s => {
+    add([sprite('spikeImg', { width: 40, height: 40 }), pos(s.x, s.y)]);
   });
 });
 
+// --- OYUN SONU ---
 scene('gameover', (s) => {
   add([text('GAME OVER', { size: 56 }), pos(center().x, center().y - 40), anchor('center'), color(255, 60, 80)]);
   add([text('Skor: ' + s, { size: 32 }), pos(center().x, center().y + 20), anchor('center'), color(255)]);
   add([text('Tekrar için dokun', { size: 20 }), pos(center().x, center().y + 80), anchor('center'), color(180)]);
   
-  // Oyun bittiğinde tıklayınca yeniden başlat
-  doJump = () => {
-    go('game');
-  };
+  // Tıklayınca aynı bölümü yeniden başlat
+  doJump = () => { go('game', currentLevel); };
 });
 
-document.getElementById('start').onclick = () => {
-  menuOpen = false;
-  document.getElementById('menu').style.display = 'none';
-  go('game');
-};
-
-// Başlangıçta demo çalışsın
-go('demo');
+// Oyun açıldığında menüyü ve arkadaki demoyu başlat
+showMenu();
