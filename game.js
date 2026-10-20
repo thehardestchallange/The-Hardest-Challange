@@ -7,6 +7,18 @@ const SKINS = {
 
 let currentSkin = localStorage.getItem('thc_skin') || 'classic';
 let menuOpen = true;
+let doJump = () => {}; // Global zıplama fonksiyonu
+
+// 🚀 TIKLAMA VE DOKUNMAYI GARANTİYE ALAN GLOBAL DİNLEYİCİLER (Canvas'a odaklanma sorununu çözer)
+window.addEventListener('mousedown', (e) => {
+  if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') doJump();
+});
+window.addEventListener('touchstart', (e) => {
+  if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') doJump();
+}, { passive: true });
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') doJump();
+});
 
 // Kostüm butonları
 const skinsEl = document.getElementById('skins');
@@ -31,7 +43,6 @@ kaboom({
   height: 450,
   background: [10, 10, 15],
   letterbox: true,
-  touchToMouse: true,
   global: true
 });
 
@@ -41,38 +52,54 @@ loadSprite('bgImg',     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT
 
 function addBackground() {
   add([sprite('bgImg', { width: width(), height: height() }), pos(0, 0), fixed(), z(-1)]);
-  // Zemin
-  add([rect(width(), 20), pos(0, height() - 20), color(60, 60, 80), area(), body({ isStatic: true }), 'ground']);
+  // Zemin alanı
+  add([rect(width(), 20), pos(0, height() - 20), color(60, 60, 80), area(), 'ground']);
 }
 
-function createPlayer(skin) {
-  return add([
-    sprite('playerImg', { width: skin.size, height: skin.size }),
-    pos(120, height() - 20 - skin.size),
-    area(),
-    body({ jumpForce: skin.jump }),
-    'player'
-  ]);
-}
-
-// 🎬 DEMO sahnesi
+// 🎬 DEMO sahnesi (Menü arkası)
 scene('demo', () => {
   const skin = SKINS[currentSkin];
   addBackground();
-  const player = createPlayer(skin);
+  
+  // Manuel Fizik Değişkenleri (Kaboom body() kullanmıyoruz, hataları önlüyoruz)
+  let playerY = height() - 20 - skin.size;
+  const player = add([
+    sprite('playerImg', { width: skin.size, height: skin.size }),
+    pos(120, playerY),
+    area(),
+    'player'
+  ]);
 
+  let velY = 0;
+  const gravity = 2000;
+  let grounded = true;
   let jumpTimer = 0.4;
   let spawnTimer = 0;
 
   onUpdate(() => {
-    jumpTimer -= dt();
+    // 1. Yerçekimi ve Fizik
+    velY += gravity * dt();
+    playerY += velY * dt();
     
-    // Eğer karakter yere yakınsa manuel zıplat
-    if (jumpTimer <= 0 && player.pos.y >= height() - 20 - skin.size - 2) {
-      player.vel.y = -skin.jump; // Doğrudan yukarı hız ver
+    const groundY = height() - 20 - skin.size;
+    if (playerY >= groundY) {
+      playerY = groundY;
+      velY = 0;
+      grounded = true;
+    } else {
+      grounded = false;
+    }
+    player.pos.y = playerY;
+
+    // 2. Rastgele Zıplama (Demo için)
+    jumpTimer -= dt();
+    if (jumpTimer <= 0 && grounded) {
+      velY = -skin.jump;
+      grounded = false;
       jumpTimer = rand(0.4, 1.3);
     }
 
+    // 3. Engel Çıkarma
     spawnTimer += dt();
     if (spawnTimer > 1.2) {
       spawnTimer = 0;
@@ -95,19 +122,26 @@ scene('demo', () => {
 scene('game', () => {
   const skin = SKINS[currentSkin];
   addBackground();
-  const player = createPlayer(skin);
-
-  function jump() {
-    // Karakterin yere yakın olup olmadığını koordinat ile kontrol et
-    if (player.pos.y >= height() - 20 - skin.size - 2) {
-      player.vel.y = -skin.jump; // Kaboom'un hatalı isGrounded kontrolünü atla, direkt hız ver
-    }
-  }
   
-  // Tuş, fare ve dokunmatik için tetikleyiciler
-  onKeyPress('space', jump);
-  onMousePress(jump);
-  onClick(jump); 
+  let playerY = height() - 20 - skin.size;
+  const player = add([
+    sprite('playerImg', { width: skin.size, height: skin.size }),
+    pos(120, playerY),
+    area(),
+    'player'
+  ]);
+
+  let velY = 0;
+  const gravity = 2000;
+  let grounded = true;
+
+  // Ekrana tıklanınca çalışacak zıplama fonksiyonu
+  doJump = () => {
+    if (grounded) {
+      velY = -skin.jump;
+      grounded = false;
+    }
+  };
 
   let score = 0;
   const scoreLabel = add([text('0', { size: 24 }), pos(20, 20), color(255)]);
@@ -116,9 +150,25 @@ scene('game', () => {
   let spawnGap = 1.4;
 
   onUpdate(() => {
+    // 1. Yerçekimi ve Fizik
+    velY += gravity * dt();
+    playerY += velY * dt();
+    
+    const groundY = height() - 20 - skin.size;
+    if (playerY >= groundY) {
+      playerY = groundY;
+      velY = 0;
+      grounded = true;
+    } else {
+      grounded = false;
+    }
+    player.pos.y = playerY;
+
+    // 2. Skor
     score += dt() * 10;
     scoreLabel.text = Math.floor(score);
 
+    // 3. Engel Çıkarma
     sinceSpawn += dt();
     if (sinceSpawn > spawnGap) {
       sinceSpawn = 0;
@@ -149,9 +199,10 @@ scene('gameover', (s) => {
   add([text('Skor: ' + s, { size: 32 }), pos(center().x, center().y + 20), anchor('center'), color(255)]);
   add([text('Tekrar için dokun', { size: 20 }), pos(center().x, center().y + 80), anchor('center'), color(180)]);
   
-  onMousePress(() => go('game'));
-  onClick(() => go('game'));
-  onKeyPress('space', () => go('game'));
+  // Oyun bittiğinde tıklayınca yeniden başlat
+  doJump = () => {
+    go('game');
+  };
 });
 
 document.getElementById('start').onclick = () => {
