@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="THC">
 <meta name="theme-color" content="#0d1033">
     
-<!-- === İKONLAR (Verdiğin link) === -->
+<!-- === İKONLAR === -->
 <link rel="apple-touch-icon" href="https://i.ibb.co/spJPDfmg/The-Hardest-Challange.png">
 <link rel="apple-touch-icon" sizes="152x152" href="https://i.ibb.co/spJPDfmg/The-Hardest-Challange.png">
 <link rel="apple-touch-icon" sizes="180x180" href="https://i.ibb.co/spJPDfmg/The-Hardest-Challange.png">
@@ -42,7 +42,7 @@ button{font:inherit;font-weight:800;font-size:22px;padding:14px 40px;border:0;bo
 button:active{transform:translateY(4px);box-shadow:0 2px 0 #178a78}
 button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 button.ghost{background:rgba(255,255,255,.12);color:var(--ink);box-shadow:0 6px 0 rgba(0,0,0,.35);font-size:18px;padding:12px 28px}
-.row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;align-items:center}
 small{display:block;margin-top:20px;color:#aab3ee;font-size:14px;line-height:1.5}
 #cards{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-bottom:22px}
 .card{width:112px;padding:14px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.09);color:var(--ink);border:3px solid var(--c);border-radius:14px;box-shadow:0 6px 0 rgba(0,0,0,.35);font-size:15px}
@@ -50,6 +50,8 @@ small{display:block;margin-top:20px;color:#aab3ee;font-size:14px;line-height:1.5
 .card svg{width:52px;height:52px;color:var(--c);fill:none;stroke:currentColor;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
 .card b{font-size:17px}
 .card i{font-style:normal;font-size:13px;color:#b8c0ff;font-weight:500}
+.repo-btn{display:inline-block;margin-top:18px;color:var(--acc);text-decoration:none;font-weight:700;font-size:16px;padding:10px 20px;border:2px solid var(--acc);border-radius:10px;transition:0.2s}
+.repo-btn:hover{background:rgba(51,240,208,.1)}
 </style>
 </head>
 <body>
@@ -57,22 +59,34 @@ small{display:block;margin-top:20px;color:#aab3ee;font-size:14px;line-height:1.5
   <canvas id="cv"></canvas>
   <div id="hud" class="hide"><div id="bar"><div id="fill"></div></div><div id="pct">0%</div><div id="att"></div><button id="mn" class="ghost">Menü</button></div>
   <div id="ov">
+    
+    <!-- BAŞLANGIÇ EKRANI -->
     <div class="box" id="sTitle">
       <h1>The Hardest Challange</h1>
       <p>Küp kendiliğinden ilerler. Doğru anda zıpla, engellerden kaç ve beş bölümü bitir.</p>
       <button id="go">Başla</button>
+      <br>
+      <a href="https://github.com/thehardestchallange/The-Hardest-Challange" target="_blank" class="repo-btn">📂 GitHub Repo</a>
       <small>Boşluk, yukarı ok veya ekrana dokunma: zıpla. Basılı tutarsan küp yere değer değmez yeniden zıplar.</small>
     </div>
+
+    <!-- BÖLÜM SEÇME EKRANI -->
     <div class="box hide" id="sMenu">
       <h2>Bölüm seç</h2>
       <div id="cards"></div>
-      <button class="ghost" id="back">Geri</button>
+      <div class="row">
+        <button class="ghost" id="back">Geri</button>
+        <a href="https://github.com/thehardestchallange/The-Hardest-Challange" target="_blank" class="ghost" style="text-decoration:none; display:flex; align-items:center;">📂 Repo</a>
+      </div>
     </div>
+
+    <!-- KAZANMA EKRANI -->
     <div class="box hide" id="sWin">
       <h1>Bölüm tamam</h1>
       <p id="wmsg"></p>
       <div class="row"><button id="nx">Sonraki bölüm</button><button class="ghost" id="wm">Bölüm seç</button></div>
     </div>
+
   </div>
 </div>
 <script>
