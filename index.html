@@ -1,105 +1,275 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>The Hardest Challenge</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="THC">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#0a0a0f">
-    <link rel="apple-touch-icon" href="https://i.ibb.co/spJPDfmg/The-Hardest-Challange.png">
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-      html, body { height: 100%; overflow: hidden; background: #0a0a0f; font-family: system-ui, sans-serif; color: #fff; user-select: none; }
-      #game { display: block; width: 100vw; height: 100vh; }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Hardest Challange</title>
 
-      /* Ortak Ekran Stili */
-      .screen {
-        position: absolute; inset: 0; display: flex; flex-direction: column;
-        align-items: center; justify-content: space-between; padding: 30px 20px;
-        background: rgba(10, 10, 15, 0.85); z-index: 10;
-      }
+<!-- === ANA EKRANA EKLEME (PWA) AYARLARI === -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="THC">
+<meta name="theme-color" content="#0d1033">
+    
+<!-- === İKONLAR (Verdiğin link) === -->
+<link rel="apple-touch-icon" href="https://i.ibb.co/spJPDfmg/The-Hardest-Challange.png">
+<link rel="apple-touch-icon" sizes="152x152" href="https://i.ibb.co/spJPDfmg/The-Hardest-Challange.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://i.ibb.co/spJPDfmg/The-Hardest-Challange.png">
+<link rel="icon" type="image/png" href="https://i.ibb.co/spJPDfmg/The-Hardest-Challange.png">
+<!-- ======================================== -->
 
-      /* Ana Menü */
-      #menu .btn-main {
-        padding: 18px 70px; font-size: 26px; font-weight: bold; border: none;
-        border-radius: 14px; background: linear-gradient(90deg, #ffd700, #ff8c00);
-        color: #000; cursor: pointer; letter-spacing: 2px; box-shadow: 0 0 20px rgba(255, 200, 0, 0.4);
-        margin-top: 15vh;
-      }
-      #menu .btn-editor {
-        padding: 12px 30px; font-size: 18px; font-weight: bold; border: 2px solid #ff006e;
-        border-radius: 10px; background: transparent; color: #ff006e; cursor: pointer;
-      }
-      #repo-link {
-        padding: 12px 30px; font-size: 16px; font-weight: bold; text-decoration: none;
-        border: 2px solid #555; border-radius: 10px; color: #fff; background: rgba(255,255,255,0.05);
-      }
-
-      /* Bölüm Seçimi */
-      #level-select { display: none; }
-      #level-select h2 { margin-top: 10vh; font-size: 28px; color: #fff; }
-      .level-scroll {
-        display: flex; gap: 15px; overflow-x: auto; width: 100%; padding: 20px 10px;
-        scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
-      }
-      .level-scroll::-webkit-scrollbar { display: none; }
-      .level-btn {
-        flex: 0 0 100px; height: 100px; border-radius: 15px; font-size: 32px; font-weight: bold;
-        background: #1a1a2e; color: #ffd700; border: 2px solid #333; cursor: pointer;
-        scroll-snap-align: center; display: flex; align-items: center; justify-content: center;
-      }
-      .level-btn:active { transform: scale(0.95); background: #ffd700; color: #000; }
-
-      /* Editör Ekranı */
-      #editor-screen { display: none; padding: 10px; }
-      .editor-top { display: flex; gap: 10px; width: 100%; justify-content: center; margin-bottom: 10px; z-index: 20; }
-      .editor-top button {
-        padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer;
-      }
-      #btn-save { background: #00ff88; color: #000; }
-      #btn-clear { background: #ff006e; color: #fff; }
-      #btn-exit-editor { background: #555; color: #fff; }
-      #editor-info { position: absolute; bottom: 20px; width: 100%; text-align: center; color: #aaa; font-size: 14px; pointer-events: none; }
-    </style>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1033;--acc:#33f0d0;--sun:#ffd23f;--ink:#f2f4ff;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:Rubik,system-ui,sans-serif;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+#app{position:relative;width:100%;height:100%}
+canvas{display:block}
+.hide{display:none!important}
+#hud{position:absolute;inset:0 0 auto 0;display:flex;align-items:center;gap:14px;padding:12px 18px;font-weight:700;pointer-events:none}
+#bar{flex:1;height:12px;border-radius:6px;background:rgba(255,255,255,.14);overflow:hidden}
+#fill{height:100%;width:0;background:var(--acc)}
+#pct{min-width:3.2em;text-align:right;font-size:20px}
+#att{font-size:14px;color:#b8c0ff;white-space:nowrap}
+#mn{pointer-events:auto;padding:6px 14px;font-size:14px}
+#ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,12,40,.74);overflow:auto}
+.box{text-align:center;padding:20px 24px;max-width:640px}
+h1{margin:0 0 12px;font-size:clamp(40px,9vw,76px);line-height:1;font-weight:800;color:var(--sun);text-shadow:0 5px 0 #1b1030}
+h2{margin:0 0 18px;font-size:clamp(28px,6vw,44px);font-weight:800;color:var(--sun);text-shadow:0 4px 0 #1b1030}
+p{margin:0 auto 24px;font-size:clamp(16px,2.4vw,19px);line-height:1.5;max-width:38ch}
+button{font:inherit;font-weight:800;font-size:22px;padding:14px 40px;border:0;border-radius:10px;background:var(--acc);color:#06241f;cursor:pointer;box-shadow:0 6px 0 #178a78}
+button:active{transform:translateY(4px);box-shadow:0 2px 0 #178a78}
+button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+button.ghost{background:rgba(255,255,255,.12);color:var(--ink);box-shadow:0 6px 0 rgba(0,0,0,.35);font-size:18px;padding:12px 28px}
+.row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+small{display:block;margin-top:20px;color:#aab3ee;font-size:14px;line-height:1.5}
+#cards{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-bottom:22px}
+.card{width:112px;padding:14px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.09);color:var(--ink);border:3px solid var(--c);border-radius:14px;box-shadow:0 6px 0 rgba(0,0,0,.35);font-size:15px}
+.card:hover{background:rgba(255,255,255,.16)}
+.card svg{width:52px;height:52px;color:var(--c);fill:none;stroke:currentColor;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.card b{font-size:17px}
+.card i{font-style:normal;font-size:13px;color:#b8c0ff;font-weight:500}
+</style>
 </head>
 <body>
-<canvas id="game"></canvas>
-
-<!-- ANA MENÜ -->
-<div id="menu" class="screen">
-  <button id="btn-play" class="btn-main">OYNA</button>
-  <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin-bottom: 10vh;">
-    <button id="btn-open-editor" class="btn-editor">🛠️ HARİTA YAP</button>
+<div id="app">
+  <canvas id="cv"></canvas>
+  <div id="hud" class="hide"><div id="bar"><div id="fill"></div></div><div id="pct">0%</div><div id="att"></div><button id="mn" class="ghost">Menü</button></div>
+  <div id="ov">
+    <div class="box" id="sTitle">
+      <h1>The Hardest Challange</h1>
+      <p>Küp kendiliğinden ilerler. Doğru anda zıpla, engellerden kaç ve beş bölümü bitir.</p>
+      <button id="go">Başla</button>
+      <small>Boşluk, yukarı ok veya ekrana dokunma: zıpla. Basılı tutarsan küp yere değer değmez yeniden zıplar.</small>
+    </div>
+    <div class="box hide" id="sMenu">
+      <h2>Bölüm seç</h2>
+      <div id="cards"></div>
+      <button class="ghost" id="back">Geri</button>
+    </div>
+    <div class="box hide" id="sWin">
+      <h1>Bölüm tamam</h1>
+      <p id="wmsg"></p>
+      <div class="row"><button id="nx">Sonraki bölüm</button><button class="ghost" id="wm">Bölüm seç</button></div>
+    </div>
   </div>
-  <a id="repo-link" href="https://github.com/thehardestchallange/The-Hardest-Challange/blob/main/README.md" target="_blank">📂 Repo</a>
 </div>
-
-<!-- BÖLÜM SEÇİMİ -->
-<div id="level-select" class="screen">
-  <h2>Bölüm Seç</h2>
-  <div class="level-scroll" id="level-container">
-    <!-- JS ile doldurulacak -->
-  </div>
-  <button id="btn-back-menu" style="padding: 12px 30px; background: transparent; color: #fff; border: 2px solid #555; border-radius: 10px; cursor: pointer;">Geri Dön</button>
-</div>
-
-<!-- HARİTA EDİTÖRÜ -->
-<div id="editor-screen" class="screen">
-  <div class="editor-top">
-    <button id="btn-save">💾 İndir (JSON)</button>
-    <button id="btn-clear">🗑️ Temizle</button>
-    <button id="btn-exit-editor">❌ Çıkış</button>
-  </div>
-  <div id="editor-info">Ekrana tıklayarak diken ekle veya kaldır. (Sadece zeminden yukarı doğru)</div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/kaboom@3000.1.17/dist/kaboom.js"></script>
-<script src="game.js"></script>
 <script>
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+(function(){
+var cv=document.getElementById('cv'),cx=cv.getContext('2d');
+var W=640,H=360,SC=1;
+function resize(){var p=cv.parentNode,d=Math.min(window.devicePixelRatio||1,2);
+  cv.width=p.clientWidth*d;cv.height=p.clientHeight*d;cv.style.width=p.clientWidth+'px';cv.style.height=p.clientHeight+'px';SC=cv.height/H;W=cv.width/SC;}
+window.addEventListener('resize',resize);resize();
+
+var GROUND=300,Z=40,V=400,G=2700,JV=820;
+var HZ={tri:{ox:11,w:18,h:28},saw:{ox:9,w:22,h:30},dia:{ox:10,w:20,h:34},tall:{ox:13,w:14,h:46}};
+var ICONS={
+  tri:'<path d="M6 42L24 8l18 34z"/>',
+  saw:'<circle cx="24" cy="24" r="12"/><path d="M24 4v8M24 36v8M4 24h8M36 24h8M10 10l6 6M32 32l6 6M38 10l-6 6M16 32l-6 6"/>',
+  dia:'<path d="M24 4l16 20-16 20L8 24z"/>',
+  tall:'<path d="M14 44L24 2l10 42z"/>',
+  mix:'<path d="M3 44l9-24 9 24zM26 34l8-10 8 10-8 10z"/><circle cx="14" cy="10" r="6"/>'};
+var LEVELS=[
+  {n:'Başlangıç',seed:11,hue:215,shapes:['tri'],bs:0,pat:34,ic:'tri'},
+  {n:'Testere',seed:23,hue:150,shapes:['saw'],bs:1,pat:38,ic:'saw'},
+  {n:'Elmas',seed:37,hue:300,shapes:['dia'],bs:2,pat:40,ic:'dia'},
+  {n:'Sivri uç',seed:41,hue:20,shapes:['tall','tri'],bs:3,pat:42,ic:'tall'},
+  {n:'Karma',seed:59,hue:265,shapes:['tri','saw','dia','tall'],bs:4,pat:46,ic:'mix'}];
+function accOf(L,prog){return 'hsl('+((LEVELS[L].hue+prog*40+170)%360)+',95%,62%)';}
+
+function rng(s){return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+var obs=[],END=0;
+function build(L){
+  var D=LEVELS[L],r=rng(D.seed),x=900,o=[];
+  function sp(px,by,sh){o.push({t:0,x:px,by:by===undefined?GROUND:by,s:sh});}
+  function bl(px,w,h){o.push({t:1,x:px,w:w,h:h});}
+  var pn=[3,4,5,5,5][L],mx=[2,3,3,3,3][L];
+  for(var i=0;i<D.pat;i++){
+    var sh=D.shapes[Math.floor(r()*D.shapes.length)],p=i<3?0:Math.floor(r()*pn),len=0,j;
+    if(p===0){var c=1+Math.floor(r()*(sh==='tall'?Math.min(2,mx):mx));for(j=0;j<c;j++)sp(x+j*40,undefined,sh);len=c*40;}
+    else if(p===1){var w=r()<.5?80:120;bl(x,w,1+(L>=2&&r()<.4?1:0));sp(x+w+90,undefined,sh);len=w+130;}
+    else if(p===2){bl(x,120,1);sp(x+80,GROUND-40,sh);len=120;}
+    else if(p===3){bl(x,80,1);bl(x+80,80,2);sp(x+300,undefined,sh);len=340;}
+    else{sp(x,undefined,sh);sp(x+40,undefined,sh);sp(x+260,undefined,sh);sp(x+300,undefined,sh);len=340;}
+    x+=len+240+r()*130;
+  }
+  obs=o;END=x+400;
+}
+
+var state='title',cur=0,dist=0,y=GROUND-Z,vy=0,rot=0,onG=true,held=false,att=1,deadT=0,parts=[],t=0,PX=120,best=[0,0,0,0,0];
+try{var bb=JSON.parse(localStorage.getItem('kup-best5')||'[]');for(var q=0;q<5;q++)best[q]=+bb[q]||0;}catch(e){}
+function saveBest(){try{localStorage.setItem('kup-best5',JSON.stringify(best));}catch(e){}}
+function $(id){return document.getElementById(id);}
+var $fill=$('fill'),$pct=$('pct'),$att=$('att'),$hud=$('hud'),$ov=$('ov'),$sT=$('sTitle'),$sM=$('sMenu'),$sW=$('sWin');
+
+function showOnly(el){[$sT,$sM,$sW].forEach(function(s){s.classList.toggle('hide',s!==el);});$ov.classList.remove('hide');$hud.classList.add('hide');}
+function reset(){dist=0;y=GROUND-Z;vy=0;rot=0;onG=true;parts=[];}
+function renderCards(){
+  var h='';
+  for(var i=0;i<5;i++){
+    var D=LEVELS[i],lab=best[i]>=100?'Bitti':best[i]?'En iyi %'+best[i]:'Yeni';
+    h+='<button class="card" data-l="'+i+'" style="--c:'+accOf(i,0)+'"><svg viewBox="0 0 48 48">'+ICONS[D.ic]+'</svg><b>Bölüm '+(i+1)+'</b><span>'+D.n+'</span><i>'+lab+'</i></button>';
+  }
+  $('cards').innerHTML=h;
+}
+function showMenu(){state='menu';build(cur);reset();renderCards();showOnly($sM);}
+function startLevel(L){cur=L;build(L);att=1;reset();state='play';$ov.classList.add('hide');$hud.classList.remove('hide');if(document.activeElement)document.activeElement.blur();}
+function burst(x,yy,n,col){for(var i=0;i<n;i++)parts.push({x:x,y:yy,vx:(Math.random()-.3)*420,vy:-Math.random()*520,l:.5+Math.random()*.6,s:5+Math.random()*9,c:col});}
+function die(){
+  state='dead';deadT=.75;
+  var pc=Math.floor(Math.min(1,dist/END)*100);
+  if(pc>best[cur]){best[cur]=pc;saveBest();}
+  burst(dist+Z/2,y+Z/2,28,'#ffd23f');burst(dist+Z/2,y+Z/2,14,'#33f0d0');
+}
+function win(){
+  state='win';best[cur]=100;saveBest();
+  $('wmsg').textContent='Bölüm '+(cur+1)+' ('+LEVELS[cur].n+') '+att+' denemede bitti.';
+  $('nx').classList.toggle('hide',cur>=4);
+  showOnly($sW);
+}
+
+function step(dt){
+  if(held&&onG){vy=-JV;onG=false;}
+  var prevB=y+Z;
+  dist+=V*dt;vy+=G*dt;y+=vy*dt;onG=false;
+  if(y+Z>=GROUND){y=GROUND-Z;vy=0;onG=true;}
+  for(var i=0;i<obs.length;i++){
+    var o=obs[i];
+    if(o.x>dist+Z+20||(o.t===1?o.x+o.w:o.x+40)<dist-20)continue;
+    if(o.t===1){
+      if(o.x<dist+Z-2&&o.x+o.w>dist+2){
+        var top=GROUND-o.h*40;
+        if(y+Z>top){if(prevB<=top+12&&vy>=0){y=top-Z;vy=0;onG=true;}else{die();return;}}
+      }
+    }else{
+      var hz=HZ[o.s],hx=o.x+hz.ox;
+      if(hx<dist+Z-4&&hx+hz.w>dist+4&&y+Z-4>o.by-hz.h&&y+4<o.by){die();return;}
+    }
+  }
+  if(onG){var tg=Math.round(rot/(Math.PI/2))*(Math.PI/2);rot+=(tg-rot)*Math.min(1,dt*24);
+    if(Math.random()<.5)parts.push({x:dist,y:y+Z-4,vx:-60-Math.random()*80,vy:-Math.random()*80,l:.35,s:4+Math.random()*4,c:'#33f0d0'});}
+  else rot+=5.2*dt;
+  if(dist>=END)win();
+}
+
+function mod(a,m){return((a%m)+m)%m;}
+function rr(x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();}
+function tile(st,x,y,acc){
+  cx.fillStyle='rgba(8,6,28,.82)';cx.fillRect(x,y,40,40);cx.strokeStyle=acc;cx.lineWidth=2.5;
+  if(st===1){rr(x+2,y+2,36,36,11);cx.stroke();cx.globalAlpha=.4;cx.beginPath();cx.arc(x+20,y+20,7,0,7);cx.stroke();cx.globalAlpha=1;return;}
+  cx.strokeRect(x+1.5,y+1.5,37,37);cx.globalAlpha=.4;
+  if(st===0)cx.strokeRect(x+9,y+9,22,22);
+  else{cx.beginPath();
+    if(st===2){cx.moveTo(x+4,y+4);cx.lineTo(x+36,y+36);cx.moveTo(x+36,y+4);cx.lineTo(x+4,y+36);}
+    else for(var k=1;k<4;k++){cx.moveTo(x+4,y+k*10);cx.lineTo(x+36,y+k*10);}
+    cx.stroke();}
+  cx.globalAlpha=1;
+}
+function haz(o,sx,acc,i){
+  var b=o.by;cx.fillStyle='#08061c';cx.strokeStyle=acc;cx.lineWidth=3;cx.lineJoin='round';cx.beginPath();
+  if(o.s==='tri'){cx.moveTo(sx+2,b);cx.lineTo(sx+20,b-40);cx.lineTo(sx+38,b);cx.closePath();}
+  else if(o.s==='tall'){cx.moveTo(sx+4,b);cx.lineTo(sx+20,b-64);cx.lineTo(sx+36,b);cx.closePath();}
+  else if(o.s==='dia'){cx.moveTo(sx+20,b-44);cx.lineTo(sx+38,b-22);cx.lineTo(sx+20,b);cx.lineTo(sx+2,b-22);cx.closePath();}
+  else{var a=t*6+i,n=12;for(var k=0;k<n*2;k++){var r=k%2?13:20,an=a+k*Math.PI/n,px=sx+20+Math.cos(an)*r,py=b-20+Math.sin(an)*r;if(k)cx.lineTo(px,py);else cx.moveTo(px,py);}cx.closePath();}
+  cx.fill();cx.stroke();
+  if(o.s==='saw'){cx.beginPath();cx.arc(sx+20,b-20,4,0,7);cx.stroke();}
+  else if(o.s==='dia'){cx.beginPath();cx.moveTo(sx+20,b-32);cx.lineTo(sx+20,b-8);cx.globalAlpha=.4;cx.stroke();cx.globalAlpha=1;}
+}
+function draw(){
+  cx.setTransform(SC,0,0,SC,0,0);
+  PX=Math.min(130,W*.28);
+  var D=LEVELS[cur],prog=Math.min(1,dist/END),hue=(D.hue+prog*40)%360,acc=accOf(cur,prog);
+  var g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,'hsl('+hue+',65%,11%)');g.addColorStop(1,'hsl('+((hue+25)%360)+',70%,24%)');
+  cx.fillStyle=g;cx.fillRect(0,0,W,H);
+  var i,k;
+  for(i=0;i<10;i++){var s=70+(i%4)*34,bx=mod(i*211-dist*(.1+(i%3)*.06),W+300)-150,by=(i*83)%230;cx.fillStyle='rgba(255,255,255,.045)';cx.fillRect(bx,by,s,s);}
+  cx.fillStyle='hsl('+hue+',55%,7%)';cx.fillRect(0,GROUND,W,H-GROUND);
+  cx.strokeStyle='rgba(255,255,255,.07)';cx.lineWidth=2;cx.beginPath();
+  for(var gx=-mod(dist,60);gx<W;gx+=60){cx.moveTo(gx,GROUND);cx.lineTo(gx-40,H);}
+  cx.stroke();
+  cx.strokeStyle=acc;cx.lineWidth=4;cx.beginPath();cx.moveTo(0,GROUND);cx.lineTo(W,GROUND);cx.stroke();
+  cx.globalAlpha=.18+.12*Math.sin(t*8);cx.lineWidth=14;cx.beginPath();cx.moveTo(0,GROUND);cx.lineTo(W,GROUND);cx.stroke();cx.globalAlpha=1;
+  var fx=END-dist+PX;
+  if(fx<W+40){cx.fillStyle=acc;cx.fillRect(fx,0,10,GROUND);cx.fillStyle='rgba(255,255,255,.9)';for(k=0;k<8;k++)cx.fillRect(fx+(k%2)*5,k*37,5,37);}
+  for(i=0;i<obs.length;i++){
+    var o=obs[i],sx=o.x-dist+PX;
+    if(sx>W+60||sx<-260)continue;
+    if(o.t===1){
+      for(var tx=0;tx<o.w/40;tx++)for(var ty=0;ty<o.h;ty++){
+        var st=D.bs===4?(tx+ty+Math.floor(o.x/40))%4:D.bs;
+        tile(st,sx+tx*40,GROUND-(ty+1)*40,acc);
+      }
+    }else haz(o,sx,acc,i);
+  }
+  for(i=0;i<parts.length;i++){var p=parts[i];cx.globalAlpha=Math.max(0,p.l*2);cx.fillStyle=p.c;cx.fillRect(p.x-dist+PX,p.y,p.s,p.s);}
+  cx.globalAlpha=1;
+  if(state!=='dead'){
+    cx.save();cx.translate(PX+Z/2,y+Z/2);cx.rotate(rot);
+    cx.fillStyle='#ffd23f';cx.fillRect(-Z/2,-Z/2,Z,Z);
+    cx.strokeStyle='#1b1030';cx.lineWidth=3.5;cx.strokeRect(-Z/2+1.75,-Z/2+1.75,Z-3.5,Z-3.5);
+    cx.fillStyle='#1b1030';cx.fillRect(-11,-8,8,10);cx.fillRect(5,-8,8,10);cx.fillRect(-12,9,24,5);
+    cx.restore();
+  }
+  if(state==='play'||state==='dead'){
+    var pc=Math.floor(prog*100);
+    $fill.style.width=pc+'%';$pct.textContent=pc+'%';
+    $att.textContent='Bölüm '+(cur+1)+' · Deneme '+att+(best[cur]&&best[cur]<100?' · En iyi %'+best[cur]:'');
+  }
+}
+
+var last=performance.now();
+function loop(now){
+  requestAnimationFrame(loop);
+  var dt=Math.min((now-last)/1000,1/30);last=now;t+=dt;
+  if(state==='play'){step(dt/2);if(state==='play')step(dt/2);}
+  else if(state==='dead'){deadT-=dt;if(deadT<=0){att++;reset();state='play';}}
+  else if(state==='title'||state==='menu'){dist+=150*dt;if(dist>END)dist=0;}
+  for(var i=parts.length-1;i>=0;i--){var p=parts[i];p.l-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=1600*dt;if(p.l<=0)parts.splice(i,1);}
+  draw();
+}
+build(0);requestAnimationFrame(loop);
+
+$('go').addEventListener('click',showMenu);
+$('back').addEventListener('click',function(){state='title';showOnly($sT);});
+$('cards').addEventListener('click',function(e){var b=e.target.closest('.card');if(b)startLevel(+b.getAttribute('data-l'));});
+$('nx').addEventListener('click',function(){startLevel(cur+1);});
+$('wm').addEventListener('click',showMenu);
+$('mn').addEventListener('click',showMenu);
+window.addEventListener('keydown',function(e){
+  var k=e.key,onBtn=document.activeElement&&document.activeElement.tagName==='BUTTON';
+  if(k==='Escape'){if(state==='play'||state==='dead')showMenu();return;}
+  if(state==='title'){if((k===' '||k==='Enter')&&!onBtn){e.preventDefault();showMenu();}return;}
+  if(state==='menu'){if(k>='1'&&k<='5')startLevel(+k-1);return;}
+  if(state==='win'){if(k==='Enter'&&!onBtn){e.preventDefault();if(cur<4)startLevel(cur+1);else showMenu();}return;}
+  if(k===' '||k==='ArrowUp'||k==='w'||k==='W'||k==='Enter'){e.preventDefault();held=true;}
+});
+window.addEventListener('keyup',function(e){var k=e.key;if(k===' '||k==='ArrowUp'||k==='w'||k==='W'||k==='Enter')held=false;});
+$('app').addEventListener('pointerdown',function(e){if(e.target.closest('button'))return;if(state==='play'||state==='dead')held=true;});
+window.addEventListener('pointerup',function(){held=false;});
+window.addEventListener('pointercancel',function(){held=false;});
+})();
 </script>
 </body>
 </html>
